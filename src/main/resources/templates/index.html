@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hospital Management</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 960px; margin: 24px auto; padding: 0 16px; color: #222; }
+        section { border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+        input, select, button { padding: 8px; margin: 4px 4px 4px 0; }
+        button { cursor: pointer; }
+        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; font-size: 14px; }
+        .error { color: #b00020; background: #fdecea; padding: 8px 12px; border-radius: 6px; }
+        .success { color: #1b5e20; background: #e8f5e9; padding: 8px 12px; border-radius: 6px; }
+        form.inline { display: inline; }
+    </style>
+</head>
+<body>
+
+<h1>Hospital Management</h1>
+
+<p class="success" th:if="${success}" th:text="${success}"></p>
+<p class="error" th:if="${error}" th:text="${error}"></p>
+
+<section>
+    <h2>Patients</h2>
+    <form th:action="@{/web/patients}" method="post">
+        <input type="text" name="name" placeholder="Name" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <button type="submit">Add patient</button>
+    </form>
+    <table>
+        <tr><th>ID</th><th>Name</th><th>Email</th><th></th></tr>
+        <tr th:each="p : ${patients}">
+            <td th:text="${p.id}"></td>
+            <td th:text="${p.name}"></td>
+            <td th:text="${p.email}"></td>
+            <td>
+                <form class="inline" th:action="@{/web/patients/{id}/delete(id=${p.id})}" method="post">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(patients)}"><td colspan="4">No patients yet.</td></tr>
+    </table>
+</section>
+
+<section>
+    <h2>Doctors</h2>
+    <form th:action="@{/web/doctors}" method="post">
+        <input type="text" name="name" placeholder="Name" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <button type="submit">Add doctor</button>
+    </form>
+    <table>
+        <tr><th>ID</th><th>Name</th><th>Email</th><th></th></tr>
+        <tr th:each="d : ${doctors}">
+            <td th:text="${d.id}"></td>
+            <td th:text="${d.name}"></td>
+            <td th:text="${d.email}"></td>
+            <td>
+                <form class="inline" th:action="@{/web/doctors/{id}/delete(id=${d.id})}" method="post">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(doctors)}"><td colspan="4">No doctors yet.</td></tr>
+    </table>
+</section>
+
+<section>
+    <h2>Appointments</h2>
+
+    <form th:action="@{/web/appointments}" method="post">
+        <select name="patientId" required>
+            <option value="">-- Patient --</option>
+            <option th:each="p : ${patients}" th:value="${p.id}" th:text="${p.id + ' - ' + p.name}"></option>
+        </select>
+        <select name="doctorId" required>
+            <option value="">-- Doctor --</option>
+            <option th:each="d : ${doctors}" th:value="${d.id}" th:text="${d.id + ' - ' + d.name}"></option>
+        </select>
+        <input type="date" name="date" required>
+        <input type="time" name="time" required>
+        <select name="status">
+            <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"></option>
+        </select>
+        <button type="submit">Add appointment</button>
+    </form>
+
+    <!-- Search uses your 3 custom queries -->
+    <form th:action="@{/}" method="get">
+        <strong>Search:</strong>
+        <select name="searchBy">
+            <option value="date"    th:selected="${searchBy == 'date'}">Date (derived query)</option>
+            <option value="doctor"  th:selected="${searchBy == 'doctor'}">Doctor ID (JPQL)</option>
+            <option value="patient" th:selected="${searchBy == 'patient'}">Patient ID (native SQL)</option>
+        </select>
+        <input type="text" name="value" th:value="${value}" placeholder="2026-11-10 or an ID">
+        <button type="submit">Search</button>
+        <a th:href="@{/}">Show all</a>
+    </form>
+
+    <table>
+        <tr><th>ID</th><th>Patient ID</th><th>Doctor ID</th><th>Date</th><th>Time</th><th>Status</th><th></th></tr>
+        <tr th:each="a : ${appointments}">
+            <td th:text="${a.id}"></td>
+            <td th:text="${a.patientId}"></td>
+            <td th:text="${a.doctorId}"></td>
+            <td th:text="${a.date}"></td>
+            <td th:text="${a.time}"></td>
+            <td th:text="${a.status}"></td>
+            <td>
+                <form class="inline" th:action="@{/web/appointments/{id}/delete(id=${a.id})}" method="post">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(appointments)}"><td colspan="7">No appointments found.</td></tr>
+    </table>
+</section>
+
+</body>
+</html>
